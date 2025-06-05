@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Trabajos del Instituto</title>
+  <style>
+    :root {
+      --bg: #1d1d1d;
+      --accent: #3affff;
+      --text: #fff;
+      --pixel-border: 4px;
+    }
+    body {
+      margin: 0;
+      display: flex;
+      font-family: 'Courier New', monospace;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+    aside {
+      width: 250px;
+      background: #111;
+      border-right: var(--pixel-border) solid var(--accent);
+      padding: 1rem;
+    }
+    aside h2, aside button {
+      font-size: 1.2rem;
+    }
+    main {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      background-image: repeating-linear-gradient(
+        45deg,
+        #1d1d1d 0px,
+        #1d1d1d 10px,
+        #222 10px,
+        #222 20px
+      );
+    }
+    .pixel-button {
+      background: var(--accent);
+      border: var(--pixel-border) solid #000;
+      color: #000;
+      padding: 0.5rem;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+    .clase, .trabajo {
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      border: var(--pixel-border) solid var(--accent);
+      padding: 0.3rem;
+      background: #222;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <aside>
+    <h2>Mis Clases</h2>
+    <div id="lista-clases"></div>
+    <button class="pixel-button" onclick="agregarClase()" id="btn-nueva-clase">+ Nueva Clase</button>
+  </aside>
+  <main>
+    <h1 id="titulo-trabajo">Selecciona un trabajo</h1>
+    <div id="contenido-trabajo"></div>
+  </main>
+
+  <script>
+    let clases = JSON.parse(localStorage.getItem("clases") || "[]");
+    let modoEdicion = false;
+    const clave = prompt("Introduce la clave de edición:");
+    if (clave === "miclave123") {
+      modoEdicion = true;
+    }
+
+    if (!modoEdicion) {
+      document.getElementById("btn-nueva-clase").style.display = "none";
+    }
+
+    function guardar() {
+      localStorage.setItem("clases", JSON.stringify(clases));
+    }
+
+    function renderClases() {
+      const lista = document.getElementById("lista-clases");
+      lista.innerHTML = "";
+      clases.forEach((clase, i) => {
+        const divClase = document.createElement("div");
+        divClase.className = "clase";
+        divClase.innerHTML = clase.nombre;
+        divClase.onclick = () => mostrarTrabajos(i);
+        lista.appendChild(divClase);
+      });
+    }
+
+    function agregarClase() {
+      const nombre = prompt("Nombre de la nueva clase:");
+      if (nombre) {
+        clases.push({ nombre, trabajos: [] });
+        guardar();
+        renderClases();
+      }
+    }
+
+    function mostrarTrabajos(indiceClase) {
+      const clase = clases[indiceClase];
+      const contenido = document.getElementById("contenido-trabajo");
+      document.getElementById("titulo-trabajo").innerText = clase.nombre;
+      contenido.innerHTML = "";
+
+      clase.trabajos.forEach((trabajo, i) => {
+        const div = document.createElement("div");
+        div.className = "trabajo";
+        div.textContent = trabajo.titulo;
+        div.onclick = () => mostrarContenido(indiceClase, i);
+        contenido.appendChild(div);
+      });
+
+      if (modoEdicion) {
+        const btn = document.createElement("button");
+        btn.textContent = "+ Agregar Trabajo";
+        btn.className = "pixel-button";
+        btn.onclick = () => agregarTrabajo(indiceClase);
+        contenido.appendChild(btn);
+      }
+    }
+
+    function agregarTrabajo(indiceClase) {
+      const titulo = prompt("Título del trabajo:");
+      const texto = prompt("Descripción del trabajo:");
+      const trabajo = { titulo, texto };
+      clases[indiceClase].trabajos.push(trabajo);
+      guardar();
+      mostrarTrabajos(indiceClase);
+    }
+
+    function mostrarContenido(indiceClase, indiceTrabajo) {
+      const trabajo = clases[indiceClase].trabajos[indiceTrabajo];
+      document.getElementById("contenido-trabajo").innerHTML = `
+        <h2>${trabajo.titulo}</h2>
+        <p>${trabajo.texto}</p>
+      `;
+    }
+
+    renderClases();
+  </script>
+</body>
+</html>
